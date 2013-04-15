@@ -174,7 +174,7 @@ class CronJob(webapp.RequestHandler):
 				"<br />all entities deleted successfully." )
 		except Exception, msg:
 			self.response.out.write( "<br />Got exception: '%s'." % msg \
-				"<br />Some or all deletes might have failed." )
+				+ "<br />Some or all deletes might have failed." )
 		
 		if len(to_remove) > 0:
 			# Clear the old lists.
