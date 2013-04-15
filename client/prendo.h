@@ -30,13 +30,13 @@
 #include <vector>
 #include <algorithm>
 #include <tuple>
+#include "cocos2d.h"
+#include "cocos-ext.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 #include "curl.h"
 #else
 #include <curl/curl.h>
 #endif
-#include "cocos2d.h"
-#include "cocos-ext.h"
 #include "picojson.h"
 
 struct ScoreEntry {
