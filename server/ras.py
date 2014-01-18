@@ -22,13 +22,15 @@
 
 from google.appengine.ext.webapp.util import run_wsgi_app
 import logging
-import json
-import webapp2
+#import json
+from django.utils import simplejson as json
+#import webapp2
+from google.appengine.ext import webapp
 
 import config
 from score import Score
 
-class RequestAndSubmitHandler( webapp2.RequestHandler ):
+class RequestAndSubmitHandler( webapp.RequestHandler ):
 	def send_response( self, success, request_response=None ):
 		response = {
 			"request": request_response,
@@ -285,7 +287,7 @@ class RequestAndSubmitHandler( webapp2.RequestHandler ):
 		request_response = self.handle_request(request, location)
 		self.send_response(success, request_response)
 
-application = webapp2.WSGIApplication( [
+application = webapp.WSGIApplication( [
 	( "/ras", RequestAndSubmitHandler ) ] )
 
 if __name__ == "__main__":
