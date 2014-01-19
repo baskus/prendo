@@ -23,12 +23,25 @@
 import datetime
 from google.appengine.api import memcache
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 import json
 import logging
 import time
 
 import config
 from country import Country
+
+# Singleton scorelist entity type
+class Scorelist(db.Model):
+	pass
+
+# Use the single Scorelist instance as a common parent for all Score instances
+# to be able to use ancestor queries and thus avoid problems
+# with the High Replication data store
+def scorelist_key():
+	single_scorelist = Scorelist(key_name="all_scores")
+	single_scorelist.put()
+	return single_scorelist.key()
 
 class Score( db.Model ):
 	SUBMIT_FAIL = 0
@@ -136,7 +149,8 @@ class Score( db.Model ):
 				comment=comment,
 				points=points,
 				control=control,
-				location=location )
+				location=location,
+				parent=scorelist_key() )
 		except Exception, e:
 			logging.error( "Score.submit: Got exception when creating Score " \
 				+ "model object. Type: %s, msg: %s", type( e ), e )
@@ -166,7 +180,7 @@ class Score( db.Model ):
 	
 	@classmethod
 	def _already_exists( cls, name, comment, points, control ):
-		scores = Score.all() \
+		scores = Score.all().ancestor(scorelist_key()) \
 			.filter( "name =", name ) \
 			.filter( "comment =", comment ) \
 			.filter( "points =", points ) \
@@ -204,7 +218,7 @@ class Score( db.Model ):
 		"""Reflag all scores (maximum 1000)."""
 		
 		# Flag all new true.
-		scores = Score.all()
+		scores = Score.all().ancestor(scorelist_key())
 		scores = scores.order( "-date" )
 		
 		time_delta = datetime.timedelta( seconds=config.WEEK_LIST_TIME )
@@ -220,7 +234,7 @@ class Score( db.Model ):
 		db.put( fetched )
 		
 		# Flag all old false.
-		scores = Score.all()
+		scores = Score.all().ancestor(scorelist_key())
 		
 		scores = scores.order( "-date" )
 		
@@ -242,7 +256,7 @@ class Score( db.Model ):
 		"""Set scores with new_week = True to new_week = False if they are older
 		than one week"""
 		
-		scores = Score.all().filter( "new_week =", True )
+		scores = Score.all().ancestor(scorelist_key()).filter( "new_week =", True )
 		
 		scores = scores.order( "-date" )
 		
@@ -283,8 +297,8 @@ class Score( db.Model ):
 		if not control in config.VALID_CONTROLS:
 			raise ValueError( "Invalid control \"%s\"" % control )
 		
-		scores = Score.all().filter( "control =", control )
-		
+		scores = Score.all().ancestor(scorelist_key()).filter( "control =", control )		
+
 		if not location in ( config.LOCATION_WORLD, config.LOCATION_WEEK ):
 			scores = scores.filter( "location =", location )
 		
