@@ -23,8 +23,7 @@
 import datetime
 from google.appengine.api import memcache
 from google.appengine.ext import db
-#import json
-from django.utils import simplejson as json
+import json
 import logging
 import time
 

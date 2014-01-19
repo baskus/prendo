@@ -20,7 +20,7 @@
 
 application: <APP NAME HERE>
 version: <APP VERSION HERE>
-runtime: python
+runtime: python27
 api_version: 1
 threadsafe: no
 
@@ -31,4 +31,3 @@ handlers:
 - url: /cronjob
   script: cronjob.py
   login: admin
-
